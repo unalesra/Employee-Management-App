@@ -5,7 +5,9 @@ class CreateEmployeeComponent extends Component {
     constructor(props) {
         super(props)
 
+        //step 2
         this.state = {
+            id: this.props.match.params.id,
             firstName: '',
             lastName: '',
             emailId: ''
@@ -15,15 +17,44 @@ class CreateEmployeeComponent extends Component {
         this.saveOrUpdateEmployee = this.saveOrUpdateEmployee.bind(this);
     }
 
+    getTitle(){
+        if(this.state.id==-1){
+            return <h3 className="text-center">Add Employee</h3>
+        }
+        else{
+            return <h3 className="text-center">Update Employee</h3>
+        }
+    }
+    
+    //step 3
+   componentDidMount(){
+    //step 4
+    // eğer iid gelmemişse :id -1 döndürür app.js
+    if(this.state.id==='_add') return
+    else{
+        EmployeeService.getEmployeeById(this.state.id).then( (res) =>{
+            let employee = res.data;
+            this.setState({firstName: employee.firstName,
+                lastName: employee.lastName,
+                emailId : employee.emailId
+            });
+        });
+    }
+}
     saveOrUpdateEmployee = (e) => {
         e.preventDefault();
         let employee = {firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId};
         console.log('employee => ' + JSON.stringify(employee));
-
-      
-        EmployeeService.createEmployee(employee).then(res =>{
-            this.props.history.push('/employees');
-        });
+        if(this.state.id==='_add'){
+            EmployeeService.createEmployee(employee).then(res =>{
+                this.props.history.push('/employees');
+            });
+        }
+        else{
+            EmployeeService.updateEmployee(employee, this.state.id).then((res)=>{
+                this.props.history.push('/employees');
+            });
+        }
     }
     
     changeFirstNameHandler= (event) => {
@@ -50,7 +81,9 @@ class CreateEmployeeComponent extends Component {
                    <div className = "container">
                         <div className = "row">
                             <div className = "card col-md-6 offset-md-3 offset-md-3">
- 
+                                {
+                                    this.getTitle()
+                                }
                                 <div className = "card-body">
                                     <form>
                                         <div className = "form-group">
